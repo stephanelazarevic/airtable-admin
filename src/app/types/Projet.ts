@@ -4,7 +4,7 @@ export type Projet = {
       name: string;
       description: string;
       technologies: { id: string; name: string }[];
-      lien: string;
+      link: string;
       promotion: string;
       students:  string;
       category: { id: string; name: string }[];

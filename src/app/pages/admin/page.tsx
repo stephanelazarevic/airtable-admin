@@ -54,7 +54,7 @@ export default function Projets() {
             <h2 className="text-xl font-semibold">{projet.fields.name}</h2>
             <p className="text-gray-700">Description: {projet.fields.description}</p>
             <p className="text-gray-700">Technologies: {projet.fields.technologies.join(", ")}</p>
-            <p className="text-gray-700">Lien: <a href={projet.fields.lien} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">Voir le projet</a></p>
+            <p className="text-gray-700">Lien: <a href={projet.fields.link} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">Voir le projet</a></p>
             <p className="text-gray-700">Promotion: {projet.fields.promotion}</p>
             <p className="text-gray-700">Étudiants: {projet.fields.students}</p>
             <p className="text-gray-700">Catégories: {projet.fields.category.join(", ")}</p>

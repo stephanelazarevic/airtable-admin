@@ -23,7 +23,7 @@ export async function insertAirtableProjet(projet: Projet) {
     name: projet.fields.name,         
     description: projet.fields.description, 
     technologies: projet.fields.technologies.map((t) => t.name), // Si c'est une sélection multiple, envoyer les noms
-    link: projet.fields.lien,
+    link: projet.fields.link,
     promotion: projet.fields.promotion,
     students: projet.fields.students,
     category: projet.fields.category.map((c) => c.name),
