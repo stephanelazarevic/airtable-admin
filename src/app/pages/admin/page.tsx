@@ -9,6 +9,7 @@ import { insertAirtableProjet } from "../../utils/airtable"; // Assurez-vous d'i
 export default function Projets() {
   const [projets, setProjets] = useState<Projet[]>([]);
   const [showForm, setShowForm] = useState(false); // État pour afficher/masquer le formulaire
+  const [searchTerm, setSearchTerm] = useState(""); // État pour la recherche par nom
 
   // Fonction pour récupérer les projets
   useEffect(() => {
@@ -32,10 +33,24 @@ export default function Projets() {
     }
   };
 
+  // Fonction de filtrage des projets en fonction du nom
+  const filteredProjets = projets.filter((projet) =>
+    projet.fields.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Liste des Projets</h1>
-      
+
+      {/* Champ de recherche */}
+      <input
+        type="text"
+        placeholder="Rechercher un projet par nom"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4 px-4 py-2 border rounded-md"
+      />
+
       {/* Bouton pour afficher/masquer le formulaire */}
       <button
         onClick={() => setShowForm(!showForm)}
@@ -47,9 +62,9 @@ export default function Projets() {
       {/* Formulaire de création de projet */}
       {showForm && <CreateProjetForm onCreateProjet={handleCreateProjet} />}
 
-      {/* Affichage des projets */}
+      {/* Affichage des projets filtrés */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projets.map((projet) => (
+        {filteredProjets.map((projet) => (
           <div key={projet.id} className="p-4 border rounded shadow">
             <h2 className="text-xl font-semibold">{projet.fields.name}</h2>
             <p className="text-gray-700">Description: {projet.fields.description}</p>
