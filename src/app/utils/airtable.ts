@@ -12,7 +12,7 @@ export async function getAirtableProjets() {
   const projets = base.table("tbl2FbQ9V2cOfvjkt").select().all();
  
   // Retourner les données sous forme de tableau
-  return (await projets).map((projet) => ({
+  return (await projets).map((projet : any) => ({
     id: projet.id,
     fields: projet.fields,
   }));
