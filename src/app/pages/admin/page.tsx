@@ -1,7 +1,7 @@
 "use client";
 
 import { Projet } from "@/app/types/Projet";
-import { getAirtableProjets } from "../../utils/airtable";
+import { getAirtableProjets, updateAirtableProjet } from "../../utils/airtable";
 import CreateProjetForm from "@/app/components/CreateProjectForm";
 import Dashboard from "@/app/components/Dashboard";
 import { useEffect, useState } from "react";
@@ -52,17 +52,12 @@ export default function Projets() {
     }
   };
 
+  // Fonction pour calculer les statistiques du dashboard
   const calculateDashboardStats = (projets: Projet[]) => {
     const totalProjets = projets.length;
-
-    // Projets visibles et cachés
     const visibleProjets = projets.filter(projet => projet.fields.visible).length;
     const hiddenProjets = totalProjets - visibleProjets;
-
-    // Nombre total de likes (en comptant le tableau "liked_by")
     const totalLikes = projets.reduce((acc, projet) => acc + (projet.fields.liked_by?.length || 0), 0);
-
-    // Répartition des projets par catégorie
     const categories = projets.reduce((acc, projet) => {
       projet.fields.category.forEach((cat) => {
         acc[cat] = (acc[cat] || 0) + 1;
@@ -77,6 +72,30 @@ export default function Projets() {
       hiddenProjets,
       categories,
     };
+  };
+
+  // Fonction pour changer la visibilité d'un projet
+  const toggleVisibility = async (projet: Projet) => {
+    const updatedProjet = {
+      ...projet,
+      fields: {
+        ...projet.fields,
+        visible: !projet.fields.visible,
+      },
+    };
+
+    // Mise à jour du projet dans Airtable
+    const response = await updateAirtableProjet(updatedProjet);
+    if (response.success) {
+      console.log("Visibilité mise à jour avec succès.");
+      setProjets((prevProjets) =>
+        prevProjets.map((p) =>
+          p.id === projet.id ? updatedProjet : p
+        )
+      );
+    } else {
+      console.log("Erreur lors de la mise à jour de la visibilité.");
+    }
   };
 
   // Fonction de filtrage des projets en fonction du nom et de la catégorie
@@ -105,7 +124,7 @@ export default function Projets() {
           onChange={(e) => setSelectedCategory(e.target.value)}
           className="px-4 py-2 border rounded-md"
         >
-          <option className="bg" value="">Toutes les catégories</option>
+          <option value="">Toutes les catégories</option>
           {categories.map((category) => (
             <option key={category} value={category}>
               {category}
@@ -116,7 +135,7 @@ export default function Projets() {
         {/* Bouton pour afficher/masquer le formulaire */}
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-green-600 text-white rounded-md"
+          className="px-4 py-2 bg-green-800 text-white rounded-md"
         >
           {showForm ? "Annuler" : "Créer un nouveau projet"}
         </button>
@@ -133,11 +152,17 @@ export default function Projets() {
             <h2 className="text-xl font-semibold">{projet.fields.name}</h2>
             <p className="text-gray-700">Description: {projet.fields.description}</p>
             <p className="text-gray-700">Technologies: {projet.fields.technologies.join(", ")}</p>
-            <p className="text-gray-700">Lien: <a href={projet.fields.link} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">Voir le projet</a></p>
+            <p className="text-gray-700">Lien: <a href={projet.fields.link} className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">Voir le projet</a></p>
             <p className="text-gray-700">Promotion: {projet.fields.promotion}</p>
             <p className="text-gray-700">Étudiants: {projet.fields.students}</p>
             <p className="text-gray-700">Catégories: {projet.fields.category.join(", ")}</p>
             <p className="text-gray-700">Nombre de likes: {projet.fields.liked_by?.length || 0}</p>
+            <button
+              onClick={() => toggleVisibility(projet)}
+              className={`px-4 py-2 mt-2 rounded-md ${projet.fields.visible ? "bg-gray-800" : "bg-green-800"} text-white`}
+            >
+              {projet.fields.visible ? "Cacher" : "Montrer"}
+            </button>
           </div>
         ))}
       </div>

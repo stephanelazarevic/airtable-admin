@@ -37,3 +37,23 @@ export async function insertAirtableProjet(projet: Projet) {
   }
 }
 
+export async function updateAirtableProjet(projet: Projet) {
+  try {
+    const updatedProjet = await base
+      .table("tbl2FbQ9V2cOfvjkt")
+      .update(projet.id, {
+        visible: projet.fields.visible,
+      });
+
+    // Ne retourner que les données nécessaires (sans méthodes ni objets complexes)
+    const updatedProjetFields = {
+      id: updatedProjet.id,
+      fields: updatedProjet.fields,
+    };
+
+    return { success: true, projet: updatedProjetFields };
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du projet:", error);
+    return { success: false, error: error };
+  }
+}
