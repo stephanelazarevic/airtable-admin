@@ -4,12 +4,12 @@ import { Projet } from "@/app/types/Projet";
 import { getAirtableProjets } from "../../utils/airtable";
 import CreateProjetForm from "@/app/components/CreateProjectForm";
 import { useEffect, useState } from "react";
-import { insertAirtableProjet } from "../../utils/airtable"; // Assurez-vous d'importer cette fonction si vous l'avez définie
+import { insertAirtableProjet } from "../../utils/airtable";
 
 export default function Projets() {
   const [projets, setProjets] = useState<Projet[]>([]);
-  const [showForm, setShowForm] = useState(false); // État pour afficher/masquer le formulaire
-  const [searchTerm, setSearchTerm] = useState(""); // État pour la recherche par nom
+  const [showForm, setShowForm] = useState(false); 
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fonction pour récupérer les projets
   useEffect(() => {
@@ -40,24 +40,25 @@ export default function Projets() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Liste des Projets</h1>
+      <h1 className="text-2xl font-bold mb-4">Interface Administrateur</h1>
+      <div className="flex items-center mb-4 gap-4 w-full">
+        {/* Champ de recherche */}
+        <input
+          type="text"
+          placeholder="Rechercher un projet par nom"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-80 px-4 py-2 border rounded-md"
+        />
 
-      {/* Champ de recherche */}
-      <input
-        type="text"
-        placeholder="Rechercher un projet par nom"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-4 px-4 py-2 border rounded-md"
-      />
-
-      {/* Bouton pour afficher/masquer le formulaire */}
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="mb-4 px-4 py-2 bg-green-600 text-white rounded-md"
-      >
-        {showForm ? "Annuler" : "Créer un nouveau projet"}
-      </button>
+        {/* Bouton pour afficher/masquer le formulaire */}
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="px-4 py-2 bg-green-600 text-white rounded-md"
+        >
+          {showForm ? "Annuler" : "Créer un nouveau projet"}
+        </button>
+      </div>
 
       {/* Formulaire de création de projet */}
       {showForm && <CreateProjetForm onCreateProjet={handleCreateProjet} />}
@@ -73,6 +74,7 @@ export default function Projets() {
             <p className="text-gray-700">Promotion: {projet.fields.promotion}</p>
             <p className="text-gray-700">Étudiants: {projet.fields.students}</p>
             <p className="text-gray-700">Catégories: {projet.fields.category.join(", ")}</p>
+            <p className="text-gray-700">Nombre de likes: {projet.fields.liked_by?.length || 0}</p>
           </div>
         ))}
       </div>
