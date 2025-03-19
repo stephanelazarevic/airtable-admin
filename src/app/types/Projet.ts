@@ -7,9 +7,9 @@ export type Projet = {
       link: string;
       promotion: string;
       students:  string;
-      admin_comments:  string;
+      admin_comments?:  string;
       category: { id: string; name: string }[];
-      liked_by: string[];
-      visible:  boolean;
+      liked_by?: string[];
+      visible?:  boolean;
     };
   };

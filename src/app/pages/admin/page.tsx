@@ -3,13 +3,23 @@
 import { Projet } from "@/app/types/Projet";
 import { getAirtableProjets } from "../../utils/airtable";
 import CreateProjetForm from "@/app/components/CreateProjectForm";
+import Dashboard from "@/app/components/Dashboard";
 import { useEffect, useState } from "react";
 import { insertAirtableProjet } from "../../utils/airtable";
 
 export default function Projets() {
   const [projets, setProjets] = useState<Projet[]>([]);
+  const [dashboardStats, setDashboardStats] = useState({
+    totalProjets: 0,
+    totalLikes: 0,
+    visibleProjets: 0,
+    hiddenProjets: 0,
+    categories: {},
+  });
   const [showForm, setShowForm] = useState(false); 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [categories, setCategories] = useState<string[]>([]);
 
   // Fonction pour récupérer les projets
   useEffect(() => {
@@ -17,6 +27,15 @@ export default function Projets() {
       const data = await getAirtableProjets();
       console.log("projets", data);
       setProjets(data as Projet[]);
+      const stats = calculateDashboardStats(data);
+      console.log("projets", stats);
+      setDashboardStats(stats);
+
+      // Extraire les catégories uniques à partir des projets
+      const allCategories = data
+        .flatMap((projet) => projet.fields.category)
+        .filter((value, index, self) => self.indexOf(value) === index); // Catégories uniques
+      setCategories(allCategories);
     };
     fetchProjets();
   }, []);
@@ -33,10 +52,39 @@ export default function Projets() {
     }
   };
 
-  // Fonction de filtrage des projets en fonction du nom
-  const filteredProjets = projets.filter((projet) =>
-    projet.fields.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const calculateDashboardStats = (projets: Projet[]) => {
+    const totalProjets = projets.length;
+
+    // Projets visibles et cachés
+    const visibleProjets = projets.filter(projet => projet.fields.visible).length;
+    const hiddenProjets = totalProjets - visibleProjets;
+
+    // Nombre total de likes (en comptant le tableau "liked_by")
+    const totalLikes = projets.reduce((acc, projet) => acc + (projet.fields.liked_by?.length || 0), 0);
+
+    // Répartition des projets par catégorie
+    const categories = projets.reduce((acc, projet) => {
+      projet.fields.category.forEach((cat) => {
+        acc[cat] = (acc[cat] || 0) + 1;
+      });
+      return acc;
+    }, {});
+
+    return {
+      totalProjets,
+      totalLikes,
+      visibleProjets,
+      hiddenProjets,
+      categories,
+    };
+  };
+
+  // Fonction de filtrage des projets en fonction du nom et de la catégorie
+  const filteredProjets = projets.filter((projet) => {
+    const matchName = projet.fields.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCategory = !selectedCategory || projet.fields.category.includes(selectedCategory);
+    return matchName && matchCategory;
+  });
 
   return (
     <div className="container mx-auto p-4">
@@ -51,6 +99,20 @@ export default function Projets() {
           className="w-80 px-4 py-2 border rounded-md"
         />
 
+        {/* Sélecteur de catégories dynamique */}
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="px-4 py-2 border rounded-md"
+        >
+          <option className="bg" value="">Toutes les catégories</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+
         {/* Bouton pour afficher/masquer le formulaire */}
         <button
           onClick={() => setShowForm(!showForm)}
@@ -60,7 +122,8 @@ export default function Projets() {
         </button>
       </div>
 
-      {/* Formulaire de création de projet */}
+      <Dashboard stats={dashboardStats} />
+
       {showForm && <CreateProjetForm onCreateProjet={handleCreateProjet} />}
 
       {/* Affichage des projets filtrés */}
