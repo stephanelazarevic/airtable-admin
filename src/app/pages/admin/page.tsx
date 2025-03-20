@@ -1,11 +1,12 @@
 "use client";
 
 import { Projet } from "@/app/types/Projet";
-import { getAirtableProjets, updateAirtableProjet } from "../../utils/airtable";
+import { getAirtableProjets, updateAirtableProjet  } from "../../utils/airtable";
 import CreateProjetForm from "@/app/components/CreateProjectForm";
 import Dashboard from "@/app/components/Dashboard";
 import { useEffect, useState } from "react";
 import { insertAirtableProjet } from "../../utils/airtable";
+import AdminCommentForm from "@/app/components/AdminCommentForm";
 
 export default function Projets() {
   const [projets, setProjets] = useState<Projet[]>([]);
@@ -98,6 +99,11 @@ export default function Projets() {
     }
   };
 
+  const refreshProjets = async () => {
+    const data = await getAirtableProjets();
+    setProjets(data);
+  };  
+
   // Fonction de filtrage des projets en fonction du nom et de la catégorie
   const filteredProjets = projets.filter((projet) => {
     const matchName = projet.fields.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -157,6 +163,33 @@ export default function Projets() {
             <p className="text-gray-700">Étudiants: {projet.fields.students}</p>
             <p className="text-gray-700">Catégories: {projet.fields.category.join(", ")}</p>
             <p className="text-gray-700">Nombre de likes: {projet.fields.liked_by?.length || 0}</p>
+            <h3 className="font-semibold">Commentaires des admins :</h3>
+              {projet.fields.admin_comment ? (
+                (() => {
+                  // Convertir la chaîne JSON en tableau (et gérer les erreurs)
+                  let comments = [];
+                  try {
+                    comments = JSON.parse(projet.fields.admin_comment);
+                  } catch (error) {
+                    console.error("Erreur de parsing JSON:", error);
+                  }
+
+                  return comments.length > 0 ? (
+                    <ul>
+                      {comments.map((cmt: any, index: number) => (
+                        <li key={index} className="text-sm text-gray-700">
+                          <strong>{cmt.author}:</strong> {cmt.message}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">Aucun commentaire.</p>
+                  );
+                })()
+              ) : (
+                <p className="text-gray-500">Aucun commentaire.</p>
+              )}
+            <AdminCommentForm projetId={projet.id} onCommentAdded={refreshProjets} />
             <button
               onClick={() => toggleVisibility(projet)}
               className={`px-4 py-2 mt-2 rounded-md ${projet.fields.visible ? "bg-gray-800" : "bg-green-800"} text-white`}
