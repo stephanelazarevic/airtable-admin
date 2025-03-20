@@ -10,13 +10,22 @@ import AdminCommentForm from "@/app/components/AdminCommentForm";
 
 export default function Projets() {
   const [projets, setProjets] = useState<Projet[]>([]);
-  const [dashboardStats, setDashboardStats] = useState({
+  const [dashboardStats, setDashboardStats] = useState<{
+    totalProjets: number;
+    totalLikes: number;
+    visibleProjets: number;
+    hiddenProjets: number;
+    topLikedProjets: Projet[]; 
+    categories: Record<string, number>;
+  }>({
     totalProjets: 0,
     totalLikes: 0,
     visibleProjets: 0,
     hiddenProjets: 0,
+    topLikedProjets: [],
     categories: {},
   });
+  
   const [showForm, setShowForm] = useState(false); 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -59,21 +68,29 @@ export default function Projets() {
     const visibleProjets = projets.filter(projet => projet.fields.visible).length;
     const hiddenProjets = totalProjets - visibleProjets;
     const totalLikes = projets.reduce((acc, projet) => acc + (projet.fields.liked_by?.length || 0), 0);
+  
+    // Calcul des catégories
     const categories = projets.reduce((acc, projet) => {
       projet.fields.category.forEach((cat) => {
         acc[cat] = (acc[cat] || 0) + 1;
       });
       return acc;
     }, {});
-
+  
+    // Trouver les projets avec le plus de likes
+    const maxLikes = Math.max(...projets.map(p => p.fields.liked_by?.length || 0), 0);
+    const topLikedProjets = projets.filter(p => (p.fields.liked_by?.length || 0) === maxLikes);
+  
     return {
       totalProjets,
       totalLikes,
       visibleProjets,
       hiddenProjets,
       categories,
+      topLikedProjets, // Ajouter les projets les plus likés
     };
   };
+  
 
   // Fonction pour changer la visibilité d'un projet
   const toggleVisibility = async (projet: Projet) => {
