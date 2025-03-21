@@ -37,7 +37,7 @@ export async function insertAirtableProjet(projet: Projet) {
   }
 }
 
-export async function updateAirtableProjet(projet: Projet) {
+export async function updateVisibilityAirtableProjet(projet: Projet) {
   try {
     const updatedProjet = await base
       .table("tbl2FbQ9V2cOfvjkt")
@@ -58,28 +58,11 @@ export async function updateAirtableProjet(projet: Projet) {
   }
 }
 
-export async function addAdminComment(projetId: string, author: string, message: string) {
+export async function updateAirtableProjet(projet: Projet) {
   try {
-    // Récupérer le projet actuel
-    const projet = await base.table("tbl2FbQ9V2cOfvjkt").find(projetId);
-
-    // Convertir les commentaires existants en tableau
-    let currentComments = [];
-    if (projet.fields.admin_comment) {
-      try {
-        currentComments = JSON.parse(projet.fields.admin_comment);
-      } catch (error) {
-        console.error("Erreur de parsing JSON:", error);
-      }
-    }
-
-    // Ajouter le nouveau commentaire
-    const updatedComments = [...currentComments, { author, message }];
-
-    // Mettre à jour Airtable avec la nouvelle liste de commentaires sous forme de string JSON
-    const updatedProjet = await base.table("tbl2FbQ9V2cOfvjkt").update(projetId, {
-      admin_comment: JSON.stringify(updatedComments),
-    });
+    const updatedProjet = await base
+      .table("tbl2FbQ9V2cOfvjkt")
+      .update(projet.id, projet.fields);
 
     return {
       success: true,
@@ -89,10 +72,15 @@ export async function addAdminComment(projetId: string, author: string, message:
       },
     };
   } catch (error) {
-    console.error("Erreur lors de l'ajout du commentaire:", error);
+    console.error("Erreur lors de la mise à jour du projet:", error);
+    
+    // 🔥 Convertir l'erreur en un objet JSON valide
     return {
       success: false,
-      error: { message: (error as any).message || "Erreur inconnue" },
+      error: {
+        message: (error as any).message || "Erreur inconnue",
+        statusCode: (error as any).statusCode || 500,
+      },
     };
   }
 }
