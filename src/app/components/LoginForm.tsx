@@ -3,14 +3,12 @@
 import React, { useState } from 'react';
 import { useAuth } from "../context/AuthContext";
 import { login } from '../utils/airtable';
-import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login: loginUser } = useAuth(); // Utilisation du contexte
 
-  const router = useRouter()
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

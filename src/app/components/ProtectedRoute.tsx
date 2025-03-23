@@ -9,8 +9,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("ProtectedRoute.tsx")
-    console.log('user')
     if (!user) {
       router.push("/");
     }
