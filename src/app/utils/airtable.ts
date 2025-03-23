@@ -2,10 +2,22 @@
  
 import Airtable from "airtable";
 import { Projet } from "@/app/types/Projet";
- 
+import * as crypto from 'crypto';
+
 const base = new Airtable({
   apiKey: process.env.AIRTABLE_KEY,
 }).base("appKEVqk50j9qEHIT");
+
+export async function login(email: string, password: string) {
+  let hashedpassword = crypto.createHash('md5').update(password).digest("hex");
+  const user = base.table("tblrBXF7mBcl2bxzX").select({
+    filterByFormula: `AND(email = '${email}', password = '${hashedpassword}')`
+  }).all();
+  return (await user).map((user : any) => ({
+    id: user.id,
+    fields: user.fields,
+  }));
+}
 
 export async function getAirtableProjets() {
   // Récupérer toutes les données de la table `Tâche`
