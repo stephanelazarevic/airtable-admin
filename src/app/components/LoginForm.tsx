@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useAuth } from "../context/AuthContext";
 import { login } from '../utils/airtable';
 import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login: loginUser } = useAuth(); // Utilisation du contexte
 
   const router = useRouter()
 
@@ -14,8 +16,10 @@ const LoginForm = () => {
     event.preventDefault();
     // Call the login function
     const user = await login(email, password);
-    if(user.length > 0) {
-      router.push('/pages/admin');
+    if (user.length > 0) {
+      loginUser(user[0]); // Stocke l'utilisateur
+    } else {
+      alert("Identifiants incorrects");
     }
   };
 

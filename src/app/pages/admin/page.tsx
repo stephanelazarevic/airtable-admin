@@ -6,6 +6,7 @@ import CreateProjetForm from "@/app/components/CreateProjectForm";
 import Dashboard from "@/app/components/Dashboard";
 import { useEffect, useState } from "react";
 import { insertAirtableProjet } from "../../utils/airtable";
+import ProtectedRoute from "@/app/components/ProtectedRoute";
 
 export default function Projets() {
   const [projets, setProjets] = useState<Projet[]>([]);
@@ -106,7 +107,8 @@ export default function Projets() {
   });
 
   return (
-    <div className="container mx-auto p-4">
+    <ProtectedRoute>
+      <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Interface Administrateur</h1>
       <div className="flex items-center mb-4 gap-4 w-full">
         {/* Champ de recherche */}
@@ -167,5 +169,6 @@ export default function Projets() {
         ))}
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
