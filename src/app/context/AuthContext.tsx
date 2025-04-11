@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             decoded.email,
             decoded.password
           );
-          console.log(user_exists);
 
           if (!user_exists) {
             logout();
@@ -40,7 +39,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           setUser(decoded);
         } catch (err) {
-          console.error("Token invalide");
           logout();
         }
       }
