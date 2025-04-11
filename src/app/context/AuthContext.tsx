@@ -6,8 +6,6 @@ import jwtEncode from "jwt-encode";
 import { jwtDecode } from "jwt-decode";
 import { checkUser } from "../utils/airtable";
 
-const SECRET = "fake_super_secret"; // ⚠️ à ne pas utiliser en prod !
-
 interface AuthContextType {
   user: any;
   login: (userData: any) => void;
@@ -56,7 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       name: userData.fields.last_name + " " + userData.fields.first_name,
     };
   
-    const token = jwtEncode(payload, SECRET);
+    console.log(process.env.NEXT_PUBLIC_JWT_SECRET);
+    const token = jwtEncode(payload, process.env.NEXT_PUBLIC_JWT_SECRET);
     localStorage.setItem("token", token);
     setUser(payload);
     router.push("/pages/admin");
