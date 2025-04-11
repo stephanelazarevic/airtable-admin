@@ -2,14 +2,39 @@
  
 import Airtable from "airtable";
 import { Projet } from "@/app/types/Projet";
- 
+import * as crypto from 'crypto';
+
 const base = new Airtable({
   apiKey: process.env.AIRTABLE_KEY,
 }).base("appKEVqk50j9qEHIT");
 
+const base_tables = {
+  user: base.table("tblrBXF7mBcl2bxzX"),
+  project: base.table("tbl2FbQ9V2cOfvjkt"),
+  project_file: base.table("tblXvmA0h7XERdBIL"),
+}
+
+export async function login(email: string, password: string) {
+  const hashedpassword = crypto.createHash('md5').update(password).digest("hex");
+  const user = await base_tables.user.select({
+    filterByFormula: `AND(email = '${email}', password = '${hashedpassword}')`
+  }).all();
+  return user.map((user : any) => ({
+    id: user.id,
+    fields: user.fields,
+  }));
+}
+
+export async function checkUser(email: string, password: string) {
+  const user = await base_tables.user.select({
+    filterByFormula: `AND(email = '${email}', password = '${password}')`
+  }).all();
+  return user.length > 0;
+}
+
 export async function getAirtableProjets() {
   // Récupérer toutes les données de la table `Tâche`
-  const projets = base.table("tbl2FbQ9V2cOfvjkt").select().all();
+  const projets = base_tables.project.select().all();
  
   // Retourner les données sous forme de tableau
   return (await projets).map((projet : any) => ({
@@ -19,7 +44,7 @@ export async function getAirtableProjets() {
 }
 
 export async function insertAirtableProjet(projet: Projet) {
-  const createProjet = await base.table("tbl2FbQ9V2cOfvjkt").create({
+  const createProjet = await base_tables.project.create({
     name: projet.fields.name,         
     description: projet.fields.description, 
     technologies: projet.fields.technologies.map((t) => t.name), // Si c'est une sélection multiple, envoyer les noms
@@ -61,7 +86,7 @@ export async function updateAirtableProjet(projet: Projet) {
 export async function addAdminComment(projetId: string, author: string, message: string) {
   try {
     // Récupérer le projet actuel
-    const projet = await base.table("tbl2FbQ9V2cOfvjkt").find(projetId);
+    const projet = await base_tables.project.find(projetId);
 
     // Convertir les commentaires existants en tableau
     let currentComments = [];
@@ -77,7 +102,7 @@ export async function addAdminComment(projetId: string, author: string, message:
     const updatedComments = [...currentComments, { author, message }];
 
     // Mettre à jour Airtable avec la nouvelle liste de commentaires sous forme de string JSON
-    const updatedProjet = await base.table("tbl2FbQ9V2cOfvjkt").update(projetId, {
+    const updatedProjet = await base_tables.project.update(projetId, {
       admin_comment: JSON.stringify(updatedComments),
     });
 
