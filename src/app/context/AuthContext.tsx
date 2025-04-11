@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import jwtEncode from "jwt-encode";
 import { jwtDecode } from "jwt-decode";
+import { checkUser } from "../utils/airtable";
 
 const SECRET = "fake_super_secret"; // ⚠️ à ne pas utiliser en prod !
 
@@ -11,6 +12,7 @@ interface AuthContextType {
   user: any;
   login: (userData: any) => void;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -21,16 +23,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUser(decoded);
-      } catch (err) {
-        console.error("Token invalide");
-        logout();
+    const verify_token = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          const user_exists = await checkUser(
+            decoded.email,
+            decoded.password
+          );
+          console.log(user_exists);
+
+          if (!user_exists) {
+            logout();
+          }
+
+          setUser(decoded);
+        } catch (err) {
+          console.error("Token invalide");
+          logout();
+        }
       }
     }
+    verify_token();
 
     setLoading(false);
   }, []);
