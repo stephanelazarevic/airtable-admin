@@ -2,6 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import jwtEncode from "jwt-encode";
+import { jwtDecode } from "jwt-decode";
+
+const SECRET = "fake_super_secret"; // ⚠️ à ne pas utiliser en prod !
 
 interface AuthContextType {
   user: any;
@@ -13,30 +17,47 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Vérifie si un utilisateur est déjà connecté (ex: stockage local)
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+      } catch (err) {
+        console.error("Token invalide");
+        logout();
+      }
     }
+
+    setLoading(false);
   }, []);
 
   const login = (userData: any) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    const payload = {
+      id: userData.id,
+      email: userData.fields.email,
+      password: userData.fields.password,
+      name: userData.fields.last_name + " " + userData.fields.first_name,
+    };
+  
+    const token = jwtEncode(payload, SECRET);
+    localStorage.setItem("token", token);
+    setUser(payload);
     router.push("/pages/admin");
   };
+  
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

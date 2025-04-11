@@ -1,15 +1,23 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from "../context/AuthContext";
 import { login } from '../utils/airtable';
+import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login: loginUser } = useAuth(); // Utilisation du contexte
-
-
+  const { login: loginUser, user, loading } = useAuth(); // Utilisation du contexte
+  const router = useRouter();
+  
+  useEffect(() => {
+    console.log("user", user);
+    if (!loading && user) {
+      router.push("/pages/admin");
+    }
+  }, [user, loading, router]);
+  
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     // Call the login function
