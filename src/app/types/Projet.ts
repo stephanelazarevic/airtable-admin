@@ -9,7 +9,7 @@ export type Projet = {
       students:  string;
       admin_comment?:  string;
       category: { id: string; name: string }[];
-      liked_by?: string[];
+      likes: number;
       visible?:  boolean;
     };
   };
