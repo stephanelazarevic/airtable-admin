@@ -81,3 +81,15 @@ option {
 .login-form button:hover {
   background-color: #0056b3;
 }
+
+.bg-custom {
+  background-color: var(--background);
+}
+
+.fg-custom {
+  background-color: var(--foreground);
+}
+
+.text-custom {
+  color: var(--text-color);
+}
